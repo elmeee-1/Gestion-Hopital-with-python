@@ -26,20 +26,19 @@
                 <div class="row">
                     <div class="col-md-7">
                         <div class="card"><div class="card-header">Liste des patients</div>
-                            <div class="card-body"><table class="table table-sm" id="patientsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Dossier</th><th>Maladie</th><th></th></tr></thead><tbody></tbody></table></div>
+                            <div class="card-body"><table class="table table-sm" id="patientsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Dossier</th><th>Maladie</th><th>Téléphone</th><th></th></tr></thead><tbody></tbody></table></div>
                         </div>
                     </div>
-                    <div class="col-md-5">
-                        <div class="card"><div class="card-header">Ajouter / Modifier</div>
-                            <div class="card-body">
-                                <input type="hidden" id="editDossier">
-                                <div class="mb-2"><label>Nom</label><input id="p_nom" class="form-control"></div>
-                                <div class="mb-2"><label>Âge</label><input id="p_age" type="number" class="form-control"></div>
-                                <div class="mb-2"><label>N° Dossier</label><input id="p_dossier" class="form-control"></div>
-                                <div class="mb-2"><label>Maladie</label><input id="p_maladie" class="form-control"></div>
-                                <button class="btn btn-primary" onclick="addOrUpdatePatient()">Enregistrer</button>
-                                <button class="btn btn-secondary" onclick="clearPatientForm()">Effacer</button>
-                            </div>
+                   <div class="card"><div class="card-header">Ajouter / Modifier</div>
+                <div class="card-body">
+                        <input type="hidden" id="editDossier">
+                            <div class="mb-2"><label>Nom</label><input id="p_nom" class="form-control"></div>
+                            <div class="mb-2"><label>Âge</label><input id="p_age" type="number" class="form-control"></div>
+                            <div class="mb-2"><label>N° Dossier</label><input id="p_dossier" class="form-control"></div>
+                            <div class="mb-2"><label>Téléphone</label><input id="p_telephone" class="form-control"></div>
+                            <div class="mb-2"><label>Maladie</label><input id="p_maladie" class="form-control"></div>
+                            <button class="btn btn-primary" onclick="addOrUpdatePatient()">Enregistrer</button>
+                            <button class="btn btn-secondary" onclick="clearPatientForm()">Effacer</button>
                         </div>
                     </div>
                 </div>
@@ -111,6 +110,7 @@
                 row.insertCell(1).innerText = p.age;
                 row.insertCell(2).innerText = p.numero_dossier;
                 row.insertCell(3).innerText = p.maladie;
+                row.insertCell(4).innerText = p.telephone || '-';
                 const btnCell = row.insertCell(4);
                 const editBtn = document.createElement('button');
                 editBtn.innerText = 'Modifier';
@@ -145,25 +145,35 @@
             document.getElementById('p_dossier').value = p.numero_dossier;
             document.getElementById('p_maladie').value = p.maladie;
         }
-
-        async function addOrUpdatePatient() {
-            const editDossier = document.getElementById('editDossier').value;
-            const data = {
-                nom: document.getElementById('p_nom').value,
-                age: parseInt(document.getElementById('p_age').value),
-                numero_dossier: document.getElementById('p_dossier').value,
-                maladie: document.getElementById('p_maladie').value
-            };
-            try {
-                if(editDossier) {
-                    await fetchJSON(`/api/patients/${editDossier}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-                } else {
-                    await fetchJSON('/api/patients', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
-                }
-                loadPatients();
-                clearPatientForm();
-            } catch(e) { showError(e.message); }
+async function addOrUpdatePatient() {
+    const editDossier = document.getElementById('editDossier').value;
+    const data = {
+    nom: document.getElementById('p_nom').value,
+    age: parseInt(document.getElementById('p_age').value),
+    numero_dossier: document.getElementById('p_dossier').value,
+    maladie: document.getElementById('p_maladie').value,
+    telephone: document.getElementById('p_telephone').value   
+  };
+    try {
+        if(editDossier) {
+            // Update existing patient (PUT request)
+            await fetchJSON(`/api/patients/${editDossier}`, {
+                method:'PUT',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify(data)
+            });
+        } else {
+            // Add new patient (POST request)
+            await fetchJSON('/api/patients', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify(data)
+            });
         }
+        loadPatients();        // refresh the table
+        clearPatientForm();    // clear the form
+    } catch(e) { showError(e.message); }
+}
 
         // -------------------- Doctors --------------------
         async function loadDoctors() {

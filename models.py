@@ -1,6 +1,8 @@
 import json
 from typing import List
 
+from app import save_data
+
 class Personne:
     def __init__(self, nom, age):
         self.nom = nom
@@ -27,7 +29,12 @@ class Personne:
         self.__age = valeur
 
     def to_dict(self):
-        return {"nom": self.nom, "age": self.age}
+        return {
+        "nom": self.nom,
+        "age": self.age,
+        "numero_dossier": self.numero_dossier,
+        "maladie": self.maladie
+    }
 
     def __str__(self):
         return f"Personne : {self.nom}, {self.age} ans"
@@ -36,11 +43,19 @@ class Personne:
 class Patient(Personne):
     _all_dossiers = set()
 
-    def __init__(self, nom, age, numero_dossier, maladie):
+    def __init__(self, nom, age, numero_dossier, maladie, telephone=""):
         super().__init__(nom, age)
         self.numero_dossier = numero_dossier
         self.maladie = maladie
+        self.telephone = telephone 
 
+    @property
+    def telephone(self):
+        return self.__telephone
+
+    @telephone.setter
+    def telephone(self, valeur):
+        self.__telephone = valeur.strip() if valeur else ""
     @property
     def numero_dossier(self):
         return self.__numero_dossier
@@ -70,7 +85,7 @@ class Patient(Personne):
 
     def to_dict(self):
         d = super().to_dict()
-        d.update({"type": "patient", "numero_dossier": self.numero_dossier, "maladie": self.maladie})
+        d.update({"type": "patient", "numero_dossier": self.numero_dossier, "maladie": self.maladie,"telephone": self.telephone})
         return d
 
     def __str__(self):
@@ -178,3 +193,31 @@ class DataStore:
             except Exception:
                 pass
         return patients, medecins
+
+from flask import request, jsonify
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Global lists
+patients = []
+medecins = []
+# ---- Patients ----
+@app.route("/api/patients", methods=["POST"])
+def add_patient():
+    global patients
+    data = request.get_json()  
+    try:
+        p = Patient(
+            nom=data["nom"],
+            age=data["age"],
+            numero_dossier=data["numero_dossier"],
+            maladie=data["maladie"],
+        )
+        patients.append(p)
+        save_data()   
+        return jsonify(p.to_dict()), 201
+    except KeyError as e:
+        return jsonify({"error": f"Missing field: {str(e)}"}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400

@@ -1,0 +1,12 @@
+{
+  "patients": [
+    {
+      "nom": "mehdi elmellouki",
+      "age": 20,
+      "type": "patient",
+      "numero_dossier": "2000",
+      "maladie": "sleep"
+    }
+  ],
+  "medecins": []
+}

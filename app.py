@@ -31,7 +31,7 @@ def get_patients():
 def add_patient():
     data = request.json
     try:
-        p = Patient(data["nom"], data["age"], data["numero_dossier"], data["maladie"])
+        p = Patient(data["nom"], data["age"], data["numero_dossier"], data["maladie"], data.get("telephone", "") )
         patients.append(p)
         save_data()
         return jsonify(p.to_dict()), 201
