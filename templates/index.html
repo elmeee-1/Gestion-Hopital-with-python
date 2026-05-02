@@ -21,24 +21,35 @@
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#stats">Statistiques</button></li>
         </ul>
         <div class="tab-content">
+
             <!-- Patients Tab -->
             <div class="tab-pane fade show active" id="patients">
                 <div class="row">
                     <div class="col-md-7">
-                        <div class="card"><div class="card-header">Liste des patients</div>
-                            <div class="card-body"><table class="table table-sm" id="patientsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Dossier</th><th>Maladie</th><th>Téléphone</th><th></th></tr></thead><tbody></tbody></table></div>
+                        <div class="card">
+                            <div class="card-header">Liste des patients</div>
+                            <div class="card-body">
+                                <table class="table table-sm" id="patientsTable">
+                                    <thead><tr><th>Nom</th><th>Âge</th><th>Dossier</th><th>Maladie</th><th>Téléphone</th><th></th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                   <div class="card"><div class="card-header">Ajouter / Modifier</div>
-                <div class="card-body">
-                        <input type="hidden" id="editDossier">
-                            <div class="mb-2"><label>Nom</label><input id="p_nom" class="form-control"></div>
-                            <div class="mb-2"><label>Âge</label><input id="p_age" type="number" class="form-control"></div>
-                            <div class="mb-2"><label>N° Dossier</label><input id="p_dossier" class="form-control"></div>
-                            <div class="mb-2"><label>Téléphone</label><input id="p_telephone" class="form-control"></div>
-                            <div class="mb-2"><label>Maladie</label><input id="p_maladie" class="form-control"></div>
-                            <button class="btn btn-primary" onclick="addOrUpdatePatient()">Enregistrer</button>
-                            <button class="btn btn-secondary" onclick="clearPatientForm()">Effacer</button>
+                    <!-- add / modify -->
+                    <div class="col-md-5">
+                        <div class="card">
+                            <div class="card-header">Ajouter / Modifier</div>
+                            <div class="card-body">
+                                <input type="hidden" id="editDossier">
+                                <div class="mb-2"><label>Nom</label><input id="p_nom" class="form-control"></div>
+                                <div class="mb-2"><label>Âge</label><input id="p_age" type="number" class="form-control"></div>
+                                <div class="mb-2"><label>N° Dossier</label><input id="p_dossier" class="form-control"></div>
+                                <div class="mb-2"><label>Téléphone</label><input id="p_telephone" class="form-control"></div>
+                                <div class="mb-2"><label>Maladie</label><input id="p_maladie" class="form-control"></div>
+                                <button class="btn btn-primary" onclick="addOrUpdatePatient()">Enregistrer</button>
+                                <button class="btn btn-secondary" onclick="clearPatientForm()">Effacer</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -47,43 +58,74 @@
             <!-- Doctors Tab -->
             <div class="tab-pane fade" id="doctors">
                 <div class="row">
-                    <div class="col-md-7"><div class="card"><div class="card-header">Liste des médecins</div><div class="card-body"><table class="table table-sm" id="doctorsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Spécialité</th><th>Consultations</th><th>Type</th><th>Service</th><th></th></tr></thead><tbody></tbody></table></div></div></div>
-                    <div class="col-md-5"><div class="card"><div class="card-header">Ajouter / Modifier</div><div class="card-body">
-                        <input type="hidden" id="editDoctorIdx">
-                        <div class="mb-2"><label>Nom</label><input id="d_nom" class="form-control"></div>
-                        <div class="mb-2"><label>Âge</label><input id="d_age" type="number" class="form-control"></div>
-                        <div class="mb-2"><label>Spécialité</label><input id="d_specialite" class="form-control"></div>
-                        <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="d_isChef"><label class="form-check-label">Médecin Chef</label></div>
-                        <div id="serviceDiv" style="display:none;"><label>Service</label><input id="d_service" class="form-control"></div>
-                        <button class="btn btn-primary" onclick="addOrUpdateDoctor()">Enregistrer</button>
-                        <button class="btn btn-secondary" onclick="clearDoctorForm()">Effacer</button>
-                    </div></div></div>
+                    <div class="col-md-7">
+                        <div class="card">
+                            <div class="card-header">Liste des médecins</div>
+                            <div class="card-body">
+                                <table class="table table-sm" id="doctorsTable">
+                                    <thead><tr><th>Nom</th><th>Âge</th><th>Spécialité</th><th>Consultations</th><th>Type</th><th>Service</th><th></th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="card">
+                            <div class="card-header">Ajouter / Modifier</div>
+                            <div class="card-body">
+                                <input type="hidden" id="editDoctorIdx">
+                                <div class="mb-2"><label>Nom</label><input id="d_nom" class="form-control"></div>
+                                <div class="mb-2"><label>Âge</label><input id="d_age" type="number" class="form-control"></div>
+                                <div class="mb-2"><label>Spécialité</label><input id="d_specialite" class="form-control"></div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="d_isChef" onchange="toggleServiceField()">
+                                    <label class="form-check-label">Médecin Chef</label>
+                                </div>
+                                <div id="serviceDiv" style="display:none;">
+                                    <label>Service</label><input id="d_service" class="form-control">
+                                </div>
+                                <button class="btn btn-primary mt-2" onclick="addOrUpdateDoctor()">Enregistrer</button>
+                                <button class="btn btn-secondary mt-2" onclick="clearDoctorForm()">Effacer</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Consultations Tab -->
             <div class="tab-pane fade" id="consult">
-                <div class="card"><div class="card-header">Effectuer une consultation</div><div class="card-body">
-                    <div class="mb-3"><label>Médecin</label><select id="consultDoctor" class="form-select"></select></div>
-                    <div class="mb-3"><label>Patient</label><select id="consultPatient" class="form-select"></select></div>
-                    <button class="btn btn-success" onclick="performConsultation()">Consulter</button>
-                    <div id="consultResult" class="mt-3"></div>
-                </div></div>
+                <div class="card">
+                    <div class="card-header">Effectuer une consultation</div>
+                    <div class="card-body">
+                        <div class="mb-3"><label>Médecin</label><select id="consultDoctor" class="form-select"></select></div>
+                        <div class="mb-3"><label>Patient</label><select id="consultPatient" class="form-select"></select></div>
+                        <button class="btn btn-success" onclick="performConsultation()">Consulter</button>
+                        <div id="consultResult" class="mt-3"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Supervision Tab -->
             <div class="tab-pane fade" id="supervise">
-                <div class="card"><div class="card-header">Supervision par un Chef</div><div class="card-body">
-                    <div class="mb-3"><label>Médecin Chef</label><select id="superChef" class="form-select"></select></div>
-                    <div class="mb-3"><label>Médecin à superviser</label><select id="superDoctor" class="form-select"></select></div>
-                    <button class="btn btn-warning" onclick="performSupervision()">Superviser</button>
-                    <div id="superResult" class="mt-3"></div>
-                </div></div>
+                <div class="card">
+                    <div class="card-header">Supervision par un Chef</div>
+                    <div class="card-body">
+                        <div class="mb-3"><label>Médecin Chef</label><select id="superChef" class="form-select"></select></div>
+                        <div class="mb-3"><label>Médecin à superviser</label><select id="superDoctor" class="form-select"></select></div>
+                        <button class="btn btn-warning" onclick="performSupervision()">Superviser</button>
+                        <div id="superResult" class="mt-3"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Statistics Tab -->
             <div class="tab-pane fade" id="stats">
-                <div class="card"><div class="card-header">Statistiques</div><div class="card-body"><pre id="statsContent" style="white-space: pre-wrap;"></pre></div></div>
+                <div class="card">
+                    <div class="card-header">Statistiques</div>
+                    <div class="card-body">
+                        <pre id="statsContent" style="white-space: pre-wrap;"></pre>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -111,7 +153,8 @@
                 row.insertCell(2).innerText = p.numero_dossier;
                 row.insertCell(3).innerText = p.maladie;
                 row.insertCell(4).innerText = p.telephone || '-';
-                const btnCell = row.insertCell(4);
+                // FIX 2: was insertCell(4) — duplicate index overwrote telephone cell
+                const btnCell = row.insertCell(5);
                 const editBtn = document.createElement('button');
                 editBtn.innerText = 'Modifier';
                 editBtn.className = 'btn btn-sm btn-outline-primary me-1';
@@ -135,6 +178,8 @@
             document.getElementById('p_nom').value = '';
             document.getElementById('p_age').value = '';
             document.getElementById('p_dossier').value = '';
+            // FIX 3: telephone was not cleared
+            document.getElementById('p_telephone').value = '';
             document.getElementById('p_maladie').value = '';
         }
 
@@ -143,37 +188,38 @@
             document.getElementById('p_nom').value = p.nom;
             document.getElementById('p_age').value = p.age;
             document.getElementById('p_dossier').value = p.numero_dossier;
+            // FIX 4: telephone was not filled when editing
+            document.getElementById('p_telephone').value = p.telephone || '';
             document.getElementById('p_maladie').value = p.maladie;
         }
-async function addOrUpdatePatient() {
-    const editDossier = document.getElementById('editDossier').value;
-    const data = {
-    nom: document.getElementById('p_nom').value,
-    age: parseInt(document.getElementById('p_age').value),
-    numero_dossier: document.getElementById('p_dossier').value,
-    maladie: document.getElementById('p_maladie').value,
-    telephone: document.getElementById('p_telephone').value   
-  };
-    try {
-        if(editDossier) {
-            // Update existing patient (PUT request)
-            await fetchJSON(`/api/patients/${editDossier}`, {
-                method:'PUT',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify(data)
-            });
-        } else {
-            // Add new patient (POST request)
-            await fetchJSON('/api/patients', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify(data)
-            });
+
+        async function addOrUpdatePatient() {
+            const editDossier = document.getElementById('editDossier').value;
+            const data = {
+                nom: document.getElementById('p_nom').value,
+                age: parseInt(document.getElementById('p_age').value),
+                numero_dossier: document.getElementById('p_dossier').value,
+                maladie: document.getElementById('p_maladie').value,
+                telephone: document.getElementById('p_telephone').value
+            };
+            try {
+                if(editDossier) {
+                    await fetchJSON(`/api/patients/${editDossier}`, {
+                        method:'PUT',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(data)
+                    });
+                } else {
+                    await fetchJSON('/api/patients', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(data)
+                    });
+                }
+                loadPatients();
+                clearPatientForm();
+            } catch(e) { showError(e.message); }
         }
-        loadPatients();        // refresh the table
-        clearPatientForm();    // clear the form
-    } catch(e) { showError(e.message); }
-}
 
         // -------------------- Doctors --------------------
         async function loadDoctors() {
@@ -230,7 +276,7 @@ async function addOrUpdatePatient() {
             document.getElementById('d_specialite').value = d.specialite;
             const isChef = (d.type === 'chef');
             document.getElementById('d_isChef').checked = isChef;
-            if(isChef) document.getElementById('d_service').value = d.service;
+            document.getElementById('d_service').value = isChef ? d.service : '';
             toggleServiceField();
         }
 
@@ -255,64 +301,82 @@ async function addOrUpdatePatient() {
             } catch(e) { showError(e.message); }
         }
 
-        // -------------------- Consultations --------------------
+        // -------------------- Consultations & Supervision --------------------
         async function refreshConsultAndSupervise() {
             const patients = await fetchJSON('/api/patients');
             const doctors = await fetchJSON('/api/doctors');
-            const docSelect = document.getElementById('consultDoctor');
-            const patSelect = document.getElementById('consultPatient');
-            const chefSelect = document.getElementById('superChef');
-            const docSuperSelect = document.getElementById('superDoctor');
 
-            docSelect.innerHTML = doctors.map((d,i) => `<option value="${i}">${d.nom} (${d.specialite})</option>`).join('');
-            patSelect.innerHTML = patients.map((p,i) => `<option value="${i}">${p.nom} - ${p.maladie}</option>`).join('');
+            document.getElementById('consultDoctor').innerHTML =
+                doctors.map((d,i) => `<option value="${i}">${d.nom} (${d.specialite})</option>`).join('');
+            document.getElementById('consultPatient').innerHTML =
+                patients.map((p,i) => `<option value="${i}">${p.nom} - ${p.maladie}</option>`).join('');
 
-            const chefs = doctors.filter(d => d.type === 'chef');
-            const nonChefs = doctors.filter(d => d.type !== 'chef');
-            chefSelect.innerHTML = chefs.map((d,i) => `<option value="${doctors.findIndex(dd=>dd.nom===d.nom)}">${d.nom} (${d.specialite})</option>`).join('');
-            docSuperSelect.innerHTML = nonChefs.map((d,i) => `<option value="${doctors.findIndex(dd=>dd.nom===d.nom)}">${d.nom} (${d.specialite})</option>`).join('');
+            // FIX 5: was using findIndex(dd=>dd.nom===d.nom) which breaks with duplicate names
+            // Now we use the real index directly from the full doctors array
+            document.getElementById('superChef').innerHTML =
+                doctors
+                    .map((d,i) => ({d, i}))
+                    .filter(({d}) => d.type === 'chef')
+                    .map(({d,i}) => `<option value="${i}">${d.nom} (${d.specialite})</option>`)
+                    .join('');
+
+            document.getElementById('superDoctor').innerHTML =
+                doctors
+                    .map((d,i) => ({d, i}))
+                    .filter(({d}) => d.type !== 'chef')
+                    .map(({d,i}) => `<option value="${i}">${d.nom} (${d.specialite})</option>`)
+                    .join('');
         }
 
         async function performConsultation() {
             const docIdx = document.getElementById('consultDoctor').value;
             const patIdx = document.getElementById('consultPatient').value;
-            if(docIdx === undefined || patIdx === undefined) return;
+            if(docIdx === '' || patIdx === '') return;
             try {
-                const res = await fetchJSON('/api/consult', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({doctor_idx:parseInt(docIdx), patient_idx:parseInt(patIdx)})});
-                document.getElementById('consultResult').innerHTML = `<div class="alert alert-success">${res.message}</div>`;
-                loadDoctors();  // update consultation count
+                const res = await fetchJSON('/api/consult', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({doctor_idx:parseInt(docIdx), patient_idx:parseInt(patIdx)})
+                });
+                document.getElementById('consultResult').innerHTML =
+                    `<div class="alert alert-success">${res.message}</div>`;
+                loadDoctors();
             } catch(e) { showError(e.message); }
         }
 
         async function performSupervision() {
             const chefIdx = document.getElementById('superChef').value;
             const docIdx = document.getElementById('superDoctor').value;
-            if(chefIdx === undefined || docIdx === undefined) return;
+            if(chefIdx === '' || docIdx === '') return;
             try {
-                const res = await fetchJSON('/api/supervise', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chef_idx:parseInt(chefIdx), doctor_idx:parseInt(docIdx)})});
-                document.getElementById('superResult').innerHTML = `<div class="alert alert-info">${res.message}</div>`;
+                const res = await fetchJSON('/api/supervise', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({chef_idx:parseInt(chefIdx), doctor_idx:parseInt(docIdx)})
+                });
+                document.getElementById('superResult').innerHTML =
+                    `<div class="alert alert-info">${res.message}</div>`;
             } catch(e) { showError(e.message); }
         }
 
         // -------------------- Statistics --------------------
         async function loadStats() {
             const stats = await fetchJSON('/api/stats');
-            const content = `
-            === STATISTIQUES GÉNÉRALES ===
-                Total patients : ${stats.total_patients}
-                Total médecins : ${stats.total_doctors}
-                dont chefs : ${stats.chefs}
+            const content =
+`=== STATISTIQUES GÉNÉRALES ===
+  Total patients : ${stats.total_patients}
+  Total médecins : ${stats.total_doctors}
+  dont chefs     : ${stats.chefs}
 
-            --- Détail des consultations ---
-            ${stats.doctors_detail.join('\n')}
+--- Détail des consultations ---
+${stats.doctors_detail.join('\n')}
 
-            --- Derniers patients ---
-            ${stats.recent_patients.join('\n')}
-            `;
+--- Derniers patients ---
+${stats.recent_patients.join('\n')}`;
             document.getElementById('statsContent').innerText = content;
         }
 
-        // -------------------- Initial load & periodic refresh --------------------
+        // -------------------- Init --------------------
         async function refreshAll() {
             await loadPatients();
             await loadDoctors();
@@ -320,8 +384,10 @@ async function addOrUpdatePatient() {
             await loadStats();
         }
 
-        // Refresh stats when tab is shown
-        document.querySelector('a[data-bs-target="#stats"]').addEventListener('shown.bs.tab', loadStats);
+        // FIX 6: was 'a[data-bs-target="#stats"]' but tabs use <button>, not <a> — event never fired
+        document.querySelector('button[data-bs-target="#stats"]')
+            .addEventListener('shown.bs.tab', loadStats);
+
         refreshAll();
     </script>
 </body>

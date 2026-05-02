@@ -3,40 +3,50 @@ from models import Patient, Medecin, MedecinChef, DataStore
 
 app = Flask(__name__)
 
-# Global data (loaded/saved on each modification)
 patients = []
 medecins = []
+
 
 def reload_data():
     global patients, medecins
     patients, medecins = DataStore.load()
 
+
 def save_data():
     DataStore.save(patients, medecins)
 
+
 # Load initial data
 reload_data()
+
 
 # ------------------- ROUTES -------------------
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 # ---- Patients ----
 @app.route("/api/patients", methods=["GET"])
 def get_patients():
     return jsonify([p.to_dict() for p in patients])
 
+
 @app.route("/api/patients", methods=["POST"])
 def add_patient():
     data = request.json
     try:
-        p = Patient(data["nom"], data["age"], data["numero_dossier"], data["maladie"], data.get("telephone", "") )
+        p = Patient(
+            data["nom"], data["age"],
+            data["numero_dossier"], data["maladie"],
+            data.get("telephone", ""),
+        )
         patients.append(p)
         save_data()
         return jsonify(p.to_dict()), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+
 
 @app.route("/api/patients/<dossier>", methods=["PUT"])
 def update_patient(dossier):
@@ -46,17 +56,18 @@ def update_patient(dossier):
             try:
                 p.nom = data["nom"]
                 p.age = data["age"]
-                p.numero_dossier = data["numero_dossier"]  # may change
+                p.numero_dossier = data["numero_dossier"]
                 p.maladie = data["maladie"]
+                p.telephone = data.get("telephone", "")
                 save_data()
                 return jsonify(p.to_dict())
             except ValueError as e:
                 return jsonify({"error": str(e)}), 400
     return jsonify({"error": "Patient not found"}), 404
 
+
 @app.route("/api/patients/<dossier>", methods=["DELETE"])
 def delete_patient(dossier):
-    global patients
     for i, p in enumerate(patients):
         if p.numero_dossier == dossier:
             Patient._all_dossiers.discard(p.numero_dossier)
@@ -65,10 +76,12 @@ def delete_patient(dossier):
             return jsonify({"message": "deleted"})
     return jsonify({"error": "Patient not found"}), 404
 
+
 # ---- Doctors ----
 @app.route("/api/doctors", methods=["GET"])
 def get_doctors():
     return jsonify([m.to_dict() for m in medecins])
+
 
 @app.route("/api/doctors", methods=["POST"])
 def add_doctor():
@@ -84,6 +97,7 @@ def add_doctor():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
+
 @app.route("/api/doctors/<int:idx>", methods=["PUT"])
 def update_doctor(idx):
     if idx < 0 or idx >= len(medecins):
@@ -96,7 +110,6 @@ def update_doctor(idx):
         old.specialite = data["specialite"]
         if isinstance(old, MedecinChef):
             if data.get("type") != "chef":
-                # Convert to simple Medecin
                 new = Medecin(data["nom"], data["age"], data["specialite"])
                 new.consultations = old.consultations
                 medecins[idx] = new
@@ -104,7 +117,6 @@ def update_doctor(idx):
                 old.service = data["service"]
         else:
             if data.get("type") == "chef":
-                # Convert to MedecinChef
                 new = MedecinChef(data["nom"], data["age"], data["specialite"], data["service"])
                 new.consultations = old.consultations
                 medecins[idx] = new
@@ -113,6 +125,7 @@ def update_doctor(idx):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
+
 @app.route("/api/doctors/<int:idx>", methods=["DELETE"])
 def delete_doctor(idx):
     if idx < 0 or idx >= len(medecins):
@@ -120,6 +133,7 @@ def delete_doctor(idx):
     medecins.pop(idx)
     save_data()
     return jsonify({"message": "deleted"})
+
 
 # ---- Consultation ----
 @app.route("/api/consult", methods=["POST"])
@@ -137,6 +151,7 @@ def consult():
         return jsonify({"message": msg, "consultations": doctor.consultations})
     except IndexError:
         return jsonify({"error": "Invalid index"}), 404
+
 
 # ---- Supervision ----
 @app.route("/api/supervise", methods=["POST"])
@@ -158,6 +173,7 @@ def supervise():
     except IndexError:
         return jsonify({"error": "Invalid index"}), 404
 
+
 # ---- Statistics ----
 @app.route("/api/stats", methods=["GET"])
 def stats():
@@ -166,8 +182,9 @@ def stats():
         "total_doctors": len(medecins),
         "chefs": sum(1 for d in medecins if isinstance(d, MedecinChef)),
         "doctors_detail": [str(d) for d in medecins],
-        "recent_patients": [str(p) for p in patients[-5:]]
+        "recent_patients": [str(p) for p in patients[-5:]],
     })
+
 
 if __name__ == "__main__":
     app.run(debug=True)

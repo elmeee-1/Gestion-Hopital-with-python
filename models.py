@@ -1,7 +1,6 @@
 import json
 from typing import List
 
-from app import save_data
 
 class Personne:
     def __init__(self, nom, age):
@@ -28,13 +27,12 @@ class Personne:
             raise ValueError(f"Âge invalide : {valeur}. Doit être entre 0 et 120.")
         self.__age = valeur
 
+    # FIX 2: only return fields that exist on ALL Personne instances
     def to_dict(self):
         return {
-        "nom": self.nom,
-        "age": self.age,
-        "numero_dossier": self.numero_dossier,
-        "maladie": self.maladie
-    }
+            "nom": self.nom,
+            "age": self.age,
+        }
 
     def __str__(self):
         return f"Personne : {self.nom}, {self.age} ans"
@@ -47,7 +45,7 @@ class Patient(Personne):
         super().__init__(nom, age)
         self.numero_dossier = numero_dossier
         self.maladie = maladie
-        self.telephone = telephone 
+        self.telephone = telephone
 
     @property
     def telephone(self):
@@ -56,6 +54,7 @@ class Patient(Personne):
     @telephone.setter
     def telephone(self, valeur):
         self.__telephone = valeur.strip() if valeur else ""
+
     @property
     def numero_dossier(self):
         return self.__numero_dossier
@@ -64,14 +63,15 @@ class Patient(Personne):
     def numero_dossier(self, valeur):
         if not valeur or not valeur.strip():
             raise ValueError("Le numéro de dossier ne peut pas être vide.")
+        valeur = valeur.strip()
         if hasattr(self, '_Patient__numero_dossier') and self.__numero_dossier == valeur:
-            pass
-        elif valeur in Patient._all_dossiers:
+            return  # no change, nothing to do
+        if valeur in Patient._all_dossiers:
             raise ValueError(f"Le dossier {valeur} existe déjà.")
         if hasattr(self, '_Patient__numero_dossier'):
             Patient._all_dossiers.discard(self.__numero_dossier)
         Patient._all_dossiers.add(valeur)
-        self.__numero_dossier = valeur.strip()
+        self.__numero_dossier = valeur
 
     @property
     def maladie(self):
@@ -85,7 +85,12 @@ class Patient(Personne):
 
     def to_dict(self):
         d = super().to_dict()
-        d.update({"type": "patient", "numero_dossier": self.numero_dossier, "maladie": self.maladie,"telephone": self.telephone})
+        d.update({
+            "type": "patient",
+            "numero_dossier": self.numero_dossier,
+            "maladie": self.maladie,
+            "telephone": self.telephone,
+        })
         return d
 
     def __str__(self):
@@ -114,7 +119,11 @@ class Medecin(Personne):
 
     def to_dict(self):
         d = super().to_dict()
-        d.update({"type": "medecin", "specialite": self.specialite, "consultations": self.consultations})
+        d.update({
+            "type": "medecin",
+            "specialite": self.specialite,
+            "consultations": self.consultations,
+        })
         return d
 
     def __str__(self):
@@ -156,7 +165,7 @@ class DataStore:
     def save(patients: List[Patient], medecins: List[Medecin]):
         data = {
             "patients": [p.to_dict() for p in patients],
-            "medecins": [m.to_dict() for m in medecins]
+            "medecins": [m.to_dict() for m in medecins],
         }
         with open(DataStore.FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -172,12 +181,15 @@ class DataStore:
         patients = []
         medecins = []
 
-        # Reset class variable for dossier uniqueness
         Patient._all_dossiers.clear()
 
         for p_data in data.get("patients", []):
             try:
-                p = Patient(p_data["nom"], p_data["age"], p_data["numero_dossier"], p_data["maladie"])
+                p = Patient(
+                    p_data["nom"], p_data["age"],
+                    p_data["numero_dossier"], p_data["maladie"],
+                    p_data.get("telephone", ""),
+                )
                 patients.append(p)
             except Exception:
                 pass
@@ -192,32 +204,5 @@ class DataStore:
                 medecins.append(m)
             except Exception:
                 pass
+
         return patients, medecins
-
-from flask import request, jsonify
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-# Global lists
-patients = []
-medecins = []
-# ---- Patients ----
-@app.route("/api/patients", methods=["POST"])
-def add_patient():
-    global patients
-    data = request.get_json()  
-    try:
-        p = Patient(
-            nom=data["nom"],
-            age=data["age"],
-            numero_dossier=data["numero_dossier"],
-            maladie=data["maladie"],
-        )
-        patients.append(p)
-        save_data()   
-        return jsonify(p.to_dict()), 201
-    except KeyError as e:
-        return jsonify({"error": f"Missing field: {str(e)}"}), 400
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400

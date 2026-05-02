@@ -1,12 +1,29 @@
 {
   "patients": [
     {
-      "nom": "mehdi elmellouki",
+      "nom": "Elmehdi Elmellouki",
       "age": 20,
       "type": "patient",
-      "numero_dossier": "2000",
-      "maladie": "sleep"
+      "numero_dossier": "D-0001",
+      "maladie": "sleepness",
+      "telephone": "+212 6 00 00 00"
     }
   ],
-  "medecins": []
+  "medecins": [
+    {
+      "nom": "Dr.Elmehdi",
+      "age": 20,
+      "type": "medecin",
+      "specialite": "tbib",
+      "consultations": 2
+    },
+    {
+      "nom": "Ceo",
+      "age": 33,
+      "type": "chef",
+      "specialite": "chef",
+      "consultations": 0,
+      "service": "tbb"
+    }
+  ]
 }
