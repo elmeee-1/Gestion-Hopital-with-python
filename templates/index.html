@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Hospitalière</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .tab-content { margin-top: 20px; }
+        .card { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">🏥 Gestion Hospitalière</h1>
+        <ul class="nav nav-tabs" id="mainTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#patients">Patients</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#doctors">Médecins</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#consult">Consultations</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#supervise">Supervision</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#stats">Statistiques</button></li>
+        </ul>
+        <div class="tab-content">
+            <!-- Patients Tab -->
+            <div class="tab-pane fade show active" id="patients">
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="card"><div class="card-header">Liste des patients</div>
+                            <div class="card-body"><table class="table table-sm" id="patientsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Dossier</th><th>Maladie</th><th></th></tr></thead><tbody></tbody></table></div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="card"><div class="card-header">Ajouter / Modifier</div>
+                            <div class="card-body">
+                                <input type="hidden" id="editDossier">
+                                <div class="mb-2"><label>Nom</label><input id="p_nom" class="form-control"></div>
+                                <div class="mb-2"><label>Âge</label><input id="p_age" type="number" class="form-control"></div>
+                                <div class="mb-2"><label>N° Dossier</label><input id="p_dossier" class="form-control"></div>
+                                <div class="mb-2"><label>Maladie</label><input id="p_maladie" class="form-control"></div>
+                                <button class="btn btn-primary" onclick="addOrUpdatePatient()">Enregistrer</button>
+                                <button class="btn btn-secondary" onclick="clearPatientForm()">Effacer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctors Tab -->
+            <div class="tab-pane fade" id="doctors">
+                <div class="row">
+                    <div class="col-md-7"><div class="card"><div class="card-header">Liste des médecins</div><div class="card-body"><table class="table table-sm" id="doctorsTable"><thead><tr><th>Nom</th><th>Âge</th><th>Spécialité</th><th>Consultations</th><th>Type</th><th>Service</th><th></th></tr></thead><tbody></tbody></table></div></div></div>
+                    <div class="col-md-5"><div class="card"><div class="card-header">Ajouter / Modifier</div><div class="card-body">
+                        <input type="hidden" id="editDoctorIdx">
+                        <div class="mb-2"><label>Nom</label><input id="d_nom" class="form-control"></div>
+                        <div class="mb-2"><label>Âge</label><input id="d_age" type="number" class="form-control"></div>
+                        <div class="mb-2"><label>Spécialité</label><input id="d_specialite" class="form-control"></div>
+                        <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="d_isChef"><label class="form-check-label">Médecin Chef</label></div>
+                        <div id="serviceDiv" style="display:none;"><label>Service</label><input id="d_service" class="form-control"></div>
+                        <button class="btn btn-primary" onclick="addOrUpdateDoctor()">Enregistrer</button>
+                        <button class="btn btn-secondary" onclick="clearDoctorForm()">Effacer</button>
+                    </div></div></div>
+                </div>
+            </div>
+
+            <!-- Consultations Tab -->
+            <div class="tab-pane fade" id="consult">
+                <div class="card"><div class="card-header">Effectuer une consultation</div><div class="card-body">
+                    <div class="mb-3"><label>Médecin</label><select id="consultDoctor" class="form-select"></select></div>
+                    <div class="mb-3"><label>Patient</label><select id="consultPatient" class="form-select"></select></div>
+                    <button class="btn btn-success" onclick="performConsultation()">Consulter</button>
+                    <div id="consultResult" class="mt-3"></div>
+                </div></div>
+            </div>
+
+            <!-- Supervision Tab -->
+            <div class="tab-pane fade" id="supervise">
+                <div class="card"><div class="card-header">Supervision par un Chef</div><div class="card-body">
+                    <div class="mb-3"><label>Médecin Chef</label><select id="superChef" class="form-select"></select></div>
+                    <div class="mb-3"><label>Médecin à superviser</label><select id="superDoctor" class="form-select"></select></div>
+                    <button class="btn btn-warning" onclick="performSupervision()">Superviser</button>
+                    <div id="superResult" class="mt-3"></div>
+                </div></div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div class="tab-pane fade" id="stats">
+                <div class="card"><div class="card-header">Statistiques</div><div class="card-body"><pre id="statsContent" style="white-space: pre-wrap;"></pre></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // -------------------- Global helpers --------------------
+        async function fetchJSON(url, options={}) {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(await res.text());
+            return res.json();
+        }
+
+        function showError(msg) { alert("Erreur : " + msg); }
+
+        // -------------------- Patients --------------------
+        async function loadPatients() {
+            const data = await fetchJSON('/api/patients');
+            const tbody = document.querySelector('#patientsTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = p.nom;
+                row.insertCell(1).innerText = p.age;
+                row.insertCell(2).innerText = p.numero_dossier;
+                row.insertCell(3).innerText = p.maladie;
+                const btnCell = row.insertCell(4);
+                const editBtn = document.createElement('button');
+                editBtn.innerText = 'Modifier';
+                editBtn.className = 'btn btn-sm btn-outline-primary me-1';
+                editBtn.onclick = () => fillPatientForm(p);
+                const delBtn = document.createElement('button');
+                delBtn.innerText = 'Supprimer';
+                delBtn.className = 'btn btn-sm btn-outline-danger';
+                delBtn.onclick = async () => {
+                    if(confirm('Supprimer ?')) {
+                        await fetchJSON(`/api/patients/${p.numero_dossier}`, {method:'DELETE'});
+                        loadPatients();
+                    }
+                };
+                btnCell.appendChild(editBtn);
+                btnCell.appendChild(delBtn);
+            });
+        }
+
+        function clearPatientForm() {
+            document.getElementById('editDossier').value = '';
+            document.getElementById('p_nom').value = '';
+            document.getElementById('p_age').value = '';
+            document.getElementById('p_dossier').value = '';
+            document.getElementById('p_maladie').value = '';
+        }
+
+        function fillPatientForm(p) {
+            document.getElementById('editDossier').value = p.numero_dossier;
+            document.getElementById('p_nom').value = p.nom;
+            document.getElementById('p_age').value = p.age;
+            document.getElementById('p_dossier').value = p.numero_dossier;
+            document.getElementById('p_maladie').value = p.maladie;
+        }
+
+        async function addOrUpdatePatient() {
+            const editDossier = document.getElementById('editDossier').value;
+            const data = {
+                nom: document.getElementById('p_nom').value,
+                age: parseInt(document.getElementById('p_age').value),
+                numero_dossier: document.getElementById('p_dossier').value,
+                maladie: document.getElementById('p_maladie').value
+            };
+            try {
+                if(editDossier) {
+                    await fetchJSON(`/api/patients/${editDossier}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+                } else {
+                    await fetchJSON('/api/patients', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+                }
+                loadPatients();
+                clearPatientForm();
+            } catch(e) { showError(e.message); }
+        }
+
+        // -------------------- Doctors --------------------
+        async function loadDoctors() {
+            const data = await fetchJSON('/api/doctors');
+            const tbody = document.querySelector('#doctorsTable tbody');
+            tbody.innerHTML = '';
+            data.forEach((d, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = d.nom;
+                row.insertCell(1).innerText = d.age;
+                row.insertCell(2).innerText = d.specialite;
+                row.insertCell(3).innerText = d.consultations;
+                row.insertCell(4).innerText = d.type === 'chef' ? 'Chef' : 'Médecin';
+                row.insertCell(5).innerText = d.service || '-';
+                const btnCell = row.insertCell(6);
+                const editBtn = document.createElement('button');
+                editBtn.innerText = 'Modifier';
+                editBtn.className = 'btn btn-sm btn-outline-primary me-1';
+                editBtn.onclick = () => fillDoctorForm(d, idx);
+                const delBtn = document.createElement('button');
+                delBtn.innerText = 'Supprimer';
+                delBtn.className = 'btn btn-sm btn-outline-danger';
+                delBtn.onclick = async () => {
+                    if(confirm('Supprimer ?')) {
+                        await fetchJSON(`/api/doctors/${idx}`, {method:'DELETE'});
+                        loadDoctors();
+                        refreshConsultAndSupervise();
+                    }
+                };
+                btnCell.appendChild(editBtn);
+                btnCell.appendChild(delBtn);
+            });
+        }
+
+        function toggleServiceField() {
+            const isChef = document.getElementById('d_isChef').checked;
+            document.getElementById('serviceDiv').style.display = isChef ? 'block' : 'none';
+        }
+
+        function clearDoctorForm() {
+            document.getElementById('editDoctorIdx').value = '';
+            document.getElementById('d_nom').value = '';
+            document.getElementById('d_age').value = '';
+            document.getElementById('d_specialite').value = '';
+            document.getElementById('d_isChef').checked = false;
+            document.getElementById('d_service').value = '';
+            toggleServiceField();
+        }
+
+        function fillDoctorForm(d, idx) {
+            document.getElementById('editDoctorIdx').value = idx;
+            document.getElementById('d_nom').value = d.nom;
+            document.getElementById('d_age').value = d.age;
+            document.getElementById('d_specialite').value = d.specialite;
+            const isChef = (d.type === 'chef');
+            document.getElementById('d_isChef').checked = isChef;
+            if(isChef) document.getElementById('d_service').value = d.service;
+            toggleServiceField();
+        }
+
+        async function addOrUpdateDoctor() {
+            const idx = document.getElementById('editDoctorIdx').value;
+            const data = {
+                nom: document.getElementById('d_nom').value,
+                age: parseInt(document.getElementById('d_age').value),
+                specialite: document.getElementById('d_specialite').value,
+                type: document.getElementById('d_isChef').checked ? 'chef' : 'medecin',
+                service: document.getElementById('d_service').value
+            };
+            try {
+                if(idx !== '') {
+                    await fetchJSON(`/api/doctors/${idx}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+                } else {
+                    await fetchJSON('/api/doctors', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+                }
+                loadDoctors();
+                clearDoctorForm();
+                refreshConsultAndSupervise();
+            } catch(e) { showError(e.message); }
+        }
+
+        // -------------------- Consultations --------------------
+        async function refreshConsultAndSupervise() {
+            const patients = await fetchJSON('/api/patients');
+            const doctors = await fetchJSON('/api/doctors');
+            const docSelect = document.getElementById('consultDoctor');
+            const patSelect = document.getElementById('consultPatient');
+            const chefSelect = document.getElementById('superChef');
+            const docSuperSelect = document.getElementById('superDoctor');
+
+            docSelect.innerHTML = doctors.map((d,i) => `<option value="${i}">${d.nom} (${d.specialite})</option>`).join('');
+            patSelect.innerHTML = patients.map((p,i) => `<option value="${i}">${p.nom} - ${p.maladie}</option>`).join('');
+
+            const chefs = doctors.filter(d => d.type === 'chef');
+            const nonChefs = doctors.filter(d => d.type !== 'chef');
+            chefSelect.innerHTML = chefs.map((d,i) => `<option value="${doctors.findIndex(dd=>dd.nom===d.nom)}">${d.nom} (${d.specialite})</option>`).join('');
+            docSuperSelect.innerHTML = nonChefs.map((d,i) => `<option value="${doctors.findIndex(dd=>dd.nom===d.nom)}">${d.nom} (${d.specialite})</option>`).join('');
+        }
+
+        async function performConsultation() {
+            const docIdx = document.getElementById('consultDoctor').value;
+            const patIdx = document.getElementById('consultPatient').value;
+            if(docIdx === undefined || patIdx === undefined) return;
+            try {
+                const res = await fetchJSON('/api/consult', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({doctor_idx:parseInt(docIdx), patient_idx:parseInt(patIdx)})});
+                document.getElementById('consultResult').innerHTML = `<div class="alert alert-success">${res.message}</div>`;
+                loadDoctors();  // update consultation count
+            } catch(e) { showError(e.message); }
+        }
+
+        async function performSupervision() {
+            const chefIdx = document.getElementById('superChef').value;
+            const docIdx = document.getElementById('superDoctor').value;
+            if(chefIdx === undefined || docIdx === undefined) return;
+            try {
+                const res = await fetchJSON('/api/supervise', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chef_idx:parseInt(chefIdx), doctor_idx:parseInt(docIdx)})});
+                document.getElementById('superResult').innerHTML = `<div class="alert alert-info">${res.message}</div>`;
+            } catch(e) { showError(e.message); }
+        }
+
+        // -------------------- Statistics --------------------
+        async function loadStats() {
+            const stats = await fetchJSON('/api/stats');
+            const content = `
+            === STATISTIQUES GÉNÉRALES ===
+                Total patients : ${stats.total_patients}
+                Total médecins : ${stats.total_doctors}
+                dont chefs : ${stats.chefs}
+
+            --- Détail des consultations ---
+            ${stats.doctors_detail.join('\n')}
+
+            --- Derniers patients ---
+            ${stats.recent_patients.join('\n')}
+            `;
+            document.getElementById('statsContent').innerText = content;
+        }
+
+        // -------------------- Initial load & periodic refresh --------------------
+        async function refreshAll() {
+            await loadPatients();
+            await loadDoctors();
+            await refreshConsultAndSupervise();
+            await loadStats();
+        }
+
+        // Refresh stats when tab is shown
+        document.querySelector('a[data-bs-target="#stats"]').addEventListener('shown.bs.tab', loadStats);
+        refreshAll();
+    </script>
+</body>
+</html>
