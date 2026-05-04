@@ -2,7 +2,7 @@
   "patients": [
     {
       "nom": "Elmehdi Elmellouki",
-      "age": 20,
+      "age": 21,
       "type": "patient",
       "numero_dossier": "D-0001",
       "maladie": "sleepness",
@@ -15,7 +15,7 @@
       "age": 20,
       "type": "medecin",
       "specialite": "tbib",
-      "consultations": 2
+      "consultations": 3
     },
     {
       "nom": "Ceo",
